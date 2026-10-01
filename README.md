@@ -49,7 +49,7 @@ To change the inbox name, privacy or run frequency, edit `CONFIG` at the top of 
 | `tests/` | Unit tests for `Logic.js` (Node's built-in test runner, no dependencies) |
 
 ```bash
-npm test        # 11 tests
+npm test        # 12 tests
 npm run check   # syntax check both script files
 ```
 
@@ -57,7 +57,7 @@ CI runs both on every push.
 
 ## Version history
 
-- **1.1** Fixed two bugs in the first version. Seen videos were stored with their titles in a single property, which hit the 9 KB limit after roughly 60–80 videos and made every sync fail. And only the first 50 items of each playlist were read, so new videos at the end of longer playlists were never picked up. Also added the per-run quota cap, the lock, skipping of private and deleted videos, and an automatic migration from the old storage format.
+- **1.1** Fixed two bugs in the first version. Seen videos were stored with their titles in a single property, which hit the 9 KB limit after roughly 60–80 videos and made every sync fail. And only the first 50 items of each playlist were read, so new videos at the end of longer playlists were never picked up. Also added the per-run quota cap, the lock, skipping of private and deleted videos, and an automatic migration from the old storage format. The first run after upgrading records everything currently in each followed playlist as seen, because 1.0's history only covered the first 50 items; without that, older videos would flood the inbox.
 - **1.0** Web app to manage followed playlists, hourly sync into a private inbox playlist.
 
 ## License

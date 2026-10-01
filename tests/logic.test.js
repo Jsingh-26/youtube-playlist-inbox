@@ -4,6 +4,7 @@ const {
   CHUNK_SIZE,
   extractPlaylistId,
   findNewVideoIds,
+  videosToAdd,
   nextSeenIds,
   isUnavailable,
   isQuotaError,
@@ -34,6 +35,14 @@ test('findNewVideoIds finds videos past position 50 (the first version missed th
   const current = Array.from({ length: 120 }, (_, i) => `v${i}`);
   const seen = current.slice(0, 118);
   assert.deepEqual(findNewVideoIds(current, seen), ['v118', 'v119']);
+});
+
+test('videosToAdd adds nothing without reliable history, so old videos never flood the inbox', () => {
+  const current = Array.from({ length: 120 }, (_, i) => `v${i}`);
+  const legacySeen = current.slice(0, 50); // 1.0 only ever read the first 50
+  assert.deepEqual(videosToAdd(current, legacySeen, true), []);
+  assert.deepEqual(videosToAdd(current, undefined, false), []);
+  assert.deepEqual(videosToAdd(['a', 'b'], ['a'], false), ['b']);
 });
 
 test('nextSeenIds keeps deferred videos out so the next run adds them', () => {

@@ -36,6 +36,16 @@ function findNewVideoIds(currentIds, seenIds) {
 }
 
 /**
+ * Videos to add on this run. With no reliable history (a playlist with no seen list,
+ * or the first run after migrating from 1.0, which only ever saw the first 50 items),
+ * every video counts as already seen: older videos must not flood the inbox.
+ */
+function videosToAdd(currentIds, seenIds, needsBaseline) {
+  if (needsBaseline || !seenIds) return [];
+  return findNewVideoIds(currentIds, seenIds);
+}
+
+/**
  * The seen list to store after a run: every video currently in the source playlist,
  * except the ones still waiting to be added (so the next run picks them up).
  * Videos that left the source playlist drop out, which keeps storage bounded by
@@ -92,6 +102,7 @@ if (typeof module !== 'undefined' && module.exports) {
     CHUNK_SIZE,
     extractPlaylistId,
     findNewVideoIds,
+    videosToAdd,
     nextSeenIds,
     isUnavailable,
     isQuotaError,

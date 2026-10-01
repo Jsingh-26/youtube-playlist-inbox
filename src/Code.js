@@ -102,6 +102,8 @@ function syncPlaylists() {
       props.setProperty(PROP.destination, destPlaylistId);
     }
 
+    // 1.0 stored no SEEN_CHUNKS; its history only covers the first 50 items of each playlist.
+    const migrating = !props.getProperty(PROP.seenChunks);
     const seen = loadSeen_();
     let insertsLeft = CONFIG.maxInsertsPerRun;
     let quotaHit = false;
@@ -113,11 +115,13 @@ function syncPlaylists() {
         videos = getPlaylistVideos_(sourceId);
       } catch (e) {
         Logger.log(`Could not read playlist ${sourceId}: ${e.message}`);
-        return; // keep its seen list as it was
+        // Keep its seen list, except a 1.0 list: drop it so the next run takes a fresh baseline.
+        if (migrating) delete seen[sourceId];
+        return;
       }
 
       const available = videos.filter(v => !isUnavailable(v));
-      const newIds = findNewVideoIds(available.map(v => v.videoId), seen[sourceId] || []);
+      const newIds = videosToAdd(available.map(v => v.videoId), seen[sourceId], migrating);
       const deferred = [];
 
       newIds.forEach(videoId => {
