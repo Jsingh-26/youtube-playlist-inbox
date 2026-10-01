@@ -87,6 +87,22 @@ function setup() {
   Logger.log('Setup complete. Deploy as a web app and open it to add playlists.');
 }
 
+/**
+ * Run from the editor to start fresh: everything currently in the followed playlists
+ * is marked as seen, so only videos added from now on reach the inbox.
+ */
+function markAllSeen() {
+  withLock_(() => {
+    const seen = {};
+    getSourcePlaylists_().forEach(({ id }) => {
+      seen[id] = nextSeenIds(getPlaylistVideos_(id).map(v => v.videoId), []);
+    });
+    saveSeen_(seen);
+    const total = Object.keys(seen).reduce((n, id) => n + seen[id].length, 0);
+    Logger.log(`Marked ${total} video(s) in ${Object.keys(seen).length} playlist(s) as seen.`);
+  });
+}
+
 /** Runs every hour: copies new videos from each tracked playlist into the inbox. */
 function syncPlaylists() {
   const lock = LockService.getScriptLock();

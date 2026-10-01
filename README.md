@@ -38,6 +38,8 @@ flowchart LR
 
 To change the inbox name, privacy or run frequency, edit `CONFIG` at the top of `src/Code.js`.
 
+To start fresh at any time, run `markAllSeen` from the editor: everything currently in the followed playlists is recorded as seen, and only videos added afterwards reach the inbox.
+
 ## Project layout
 
 | Path | What it is |
