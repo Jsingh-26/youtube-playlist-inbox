@@ -175,6 +175,58 @@ function syncPlaylists() {
   }
 }
 
+/**
+ * Undo a bad batch: removes entries added to the inbox playlist between two times
+ * (ISO 8601 with a time zone, e.g. '2026-10-01T19:38:00+05:30'). Only playlist
+ * entries are removed; the videos themselves are untouched.
+ * With dryRun true it only reports what would be removed. Removing an entry costs
+ * 50 quota units, so a large batch may stop at the daily quota: run it again after
+ * the reset and it carries on with what is left.
+ */
+function removeInboxItemsAddedBetween(startIso, endIso, dryRun) {
+  if (isNaN(Date.parse(startIso)) || isNaN(Date.parse(endIso))) {
+    throw new Error('Pass start and end as ISO 8601 times, e.g. 2026-10-01T19:38:00+05:30');
+  }
+  const destPlaylistId = PropertiesService.getScriptProperties().getProperty(PROP.destination);
+  if (!destPlaylistId) throw new Error('No inbox playlist yet. Run setup first.');
+
+  const matches = [];
+  let pageToken = null;
+  do {
+    const response = YouTube.PlaylistItems.list('snippet', { playlistId: destPlaylistId, maxResults: 50, pageToken });
+    (response.items || []).forEach(item => {
+      // For a playlist entry, snippet.publishedAt is when it was added to the playlist.
+      if (isInWindow(item.snippet.publishedAt, startIso, endIso)) {
+        matches.push({ id: item.id, title: item.snippet.title, addedAt: item.snippet.publishedAt });
+      }
+    });
+    pageToken = response.nextPageToken;
+  } while (pageToken);
+
+  if (dryRun) {
+    matches.slice(0, 10).forEach(m => Logger.log(`Would remove: ${m.title} (added ${m.addedAt})`));
+    Logger.log(`Dry run: ${matches.length} inbox entr${matches.length === 1 ? 'y' : 'ies'} added in that window would be removed.`);
+    return matches.length;
+  }
+
+  let removed = 0;
+  for (const m of matches) {
+    try {
+      YouTube.PlaylistItems.remove(m.id);
+      removed++;
+      Utilities.sleep(200);
+    } catch (e) {
+      if (isQuotaError(e)) {
+        Logger.log(`Daily quota reached after removing ${removed}. Run again after the reset to remove the other ${matches.length - removed}.`);
+        return removed;
+      }
+      Logger.log(`Could not remove "${m.title}": ${e.message}`);
+    }
+  }
+  Logger.log(`Removed ${removed} of ${matches.length} inbox entries added in that window.`);
+  return removed;
+}
+
 // ---------- Storage ----------
 
 function getSourcePlaylists_() {

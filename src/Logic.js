@@ -88,6 +88,12 @@ function migrateLegacySeen(legacyMap) {
   return byPlaylist;
 }
 
+/** True when an ISO timestamp falls inside [startIso, endIso]. */
+function isInWindow(timestamp, startIso, endIso) {
+  const t = Date.parse(timestamp);
+  return !Number.isNaN(t) && t >= Date.parse(startIso) && t <= Date.parse(endIso);
+}
+
 /** The `count` videos most recently added to a playlist (by the time they were added). */
 function pickRecent(videos, count) {
   return videos
@@ -108,6 +114,7 @@ if (typeof module !== 'undefined' && module.exports) {
     isQuotaError,
     splitIntoChunks,
     migrateLegacySeen,
+    isInWindow,
     pickRecent
   };
 }

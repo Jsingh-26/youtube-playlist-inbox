@@ -51,7 +51,7 @@ To start fresh at any time, run `markAllSeen` from the editor: everything curren
 | `tests/` | Unit tests for `Logic.js` (Node's built-in test runner, no dependencies) |
 
 ```bash
-npm test        # 12 tests
+npm test        # 13 tests
 npm run check   # syntax check both script files
 ```
 

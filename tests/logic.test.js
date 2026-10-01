@@ -10,6 +10,7 @@ const {
   isQuotaError,
   splitIntoChunks,
   migrateLegacySeen,
+  isInWindow,
   pickRecent
 } = require('../src/Logic.js');
 
@@ -88,6 +89,15 @@ test('migrateLegacySeen groups the old single map by source playlist', () => {
   };
   assert.deepEqual(migrateLegacySeen(legacy), { PLa: ['v1', 'v3'], PLb: ['v2'] });
   assert.deepEqual(migrateLegacySeen(null), {});
+});
+
+test('isInWindow compares across time zones and rejects bad timestamps', () => {
+  const start = '2026-10-01T19:38:00+05:30';
+  const end = '2026-10-01T19:48:30+05:30';
+  assert.equal(isInWindow('2026-10-01T14:10:00Z', start, end), true); // 19:40 IST
+  assert.equal(isInWindow('2026-10-01T14:07:59Z', start, end), false); // 19:37:59 IST
+  assert.equal(isInWindow('2026-10-01T14:18:31Z', start, end), false); // 19:48:31 IST
+  assert.equal(isInWindow('', start, end), false);
 });
 
 test('pickRecent returns the latest additions, skipping unavailable videos', () => {
