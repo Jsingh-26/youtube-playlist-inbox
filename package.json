@@ -1,0 +1,16 @@
+{
+  "name": "youtube-playlist-inbox",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Subscribe to YouTube playlists: new videos from the playlists you follow land in one private inbox playlist. Google Apps Script.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
+    "check": "node --check src/Code.js && node --check src/Logic.js",
+    "push": "clasp push",
+    "deploy": "clasp push && clasp deploy"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
